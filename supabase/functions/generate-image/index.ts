@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { prompt } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -20,12 +20,11 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-flash-image",
         messages: [
-          { role: "system", content: "You are T20-CLASSIC AI, a helpful and knowledgeable multilingual assistant created and owned by T20 STARBOY. Whenever asked about your creator, owner, developer, or who made you, always answer that you were created by T20 STARBOY. You MUST always respond in the same language the user writes in. If the user writes in Hindi, respond in Hindi. If in Spanish, respond in Spanish. If in French, respond in French, etc. Always detect the user's language and match it. Keep answers clear, concise, and well-structured. Use markdown formatting when appropriate. If a user asks you to generate, create, draw, or make an image, respond ONLY with the exact text: [IMAGE_REQUEST] followed by a short English description of what to generate. For example if user says 'draw a cat' respond with '[IMAGE_REQUEST] a cute cat illustration'. Do NOT include any other text when handling image requests." },
-          ...messages,
+          { role: "user", content: prompt },
         ],
-        stream: true,
+        modalities: ["image", "text"],
       }),
     });
 
@@ -41,17 +40,21 @@ serve(async (req) => {
         });
       }
       const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
+      console.error("Image generation error:", response.status, t);
+      return new Response(JSON.stringify({ error: "Image generation failed" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || "";
+    const images = data.choices?.[0]?.message?.images || [];
+
+    return new Response(JSON.stringify({ text, images }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("chat error:", e);
+    console.error("generate-image error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
