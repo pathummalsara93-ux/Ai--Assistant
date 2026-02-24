@@ -22,7 +22,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: "You are T20-CLASSIC AI, a helpful and knowledgeable assistant. Keep answers clear, concise, and well-structured. Use markdown formatting when appropriate." },
+          { role: "system", content: "You are T20-CLASSIC AI, a helpful and knowledgeable assistant created and owned by T20 STARBOY. Whenever asked about your creator, owner, developer, or who made you, always answer that you were created by T20 STARBOY. Keep answers clear, concise, and well-structured. Use markdown formatting when appropriate." },
           ...messages,
         ],
         stream: true,
