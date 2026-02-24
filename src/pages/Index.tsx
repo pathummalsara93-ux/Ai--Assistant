@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Menu } from "lucide-react";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChatMessage } from "@/components/ChatMessage";
 import { TypingIndicator } from "@/components/TypingIndicator";
 import { ChatInput } from "@/components/ChatInput";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -22,6 +24,8 @@ const Index = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedModel, setSelectedModel] = useState("t20-pro");
   const [modelName, setModelName] = useState("T20-CLASSIC Pro");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
 
   const handleModelSelect = (model: string) => {
     setSelectedModel(model);
@@ -41,10 +45,10 @@ const Index = () => {
         isUser: false,
       },
     ]);
+    if (isMobile) setSidebarOpen(false);
   };
 
   const handleSendMessage = async (content: string) => {
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       content,
@@ -53,7 +57,6 @@ const Index = () => {
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
-    // Simulate AI response (replace with actual API call)
     setTimeout(() => {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -66,17 +69,47 @@ const Index = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <ChatSidebar selectedModel={selectedModel} onModelSelect={handleModelSelect} />
+    <div className="flex h-screen overflow-hidden relative">
+      {/* Overlay for mobile */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-30 transition-opacity duration-200"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div
+        className={`
+          ${isMobile ? "fixed inset-y-0 left-0 z-40" : "relative"}
+          transition-all duration-200 ease-out
+          ${sidebarOpen ? (isMobile ? "translate-x-0" : "w-64") : (isMobile ? "-translate-x-full" : "w-0")}
+          overflow-hidden flex-shrink-0
+        `}
+      >
+        <div className="w-64 h-full">
+          <ChatSidebar selectedModel={selectedModel} onModelSelect={handleModelSelect} />
+        </div>
+      </div>
       
-      <div className="flex-1 flex flex-col">
-        <div className="bg-card/50 backdrop-blur-sm border-b border-border/50 text-center py-6 px-5">
-          <h1 className="text-2xl font-semibold gradient-text mb-1">
-            T20-CLASSIC AI Assistant
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Advanced AI powered by cutting-edge technology
-          </p>
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="bg-card/50 backdrop-blur-sm border-b border-border/50 flex items-center py-4 px-5 gap-4">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg hover:bg-secondary/50 transition-colors duration-150 text-muted-foreground hover:text-foreground"
+            aria-label="Toggle sidebar"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="text-center flex-1">
+            <h1 className="text-xl font-semibold gradient-text">
+              T20-CLASSIC AI Assistant
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Advanced AI powered by cutting-edge technology
+            </p>
+          </div>
+          <div className="w-9" /> {/* Spacer for centering */}
         </div>
 
         <div className="flex-1 overflow-y-auto chat-scroll p-6 flex flex-col gap-5">
