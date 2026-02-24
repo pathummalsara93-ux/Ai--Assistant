@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Menu } from "lucide-react";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChatMessage } from "@/components/ChatMessage";
 import { TypingIndicator } from "@/components/TypingIndicator";
 import { ChatInput } from "@/components/ChatInput";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { streamChat, type ChatMsg } from "@/lib/streamChat";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -48,6 +50,8 @@ const Index = () => {
     if (isMobile) setSidebarOpen(false);
   };
 
+  const chatHistoryRef = useRef<ChatMsg[]>([]);
+
   const handleSendMessage = async (content: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -57,15 +61,32 @@ const Index = () => {
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
-    setTimeout(() => {
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "I'm a demo chatbot. To connect me to a real AI, please enable Lovable Cloud and integrate with an AI service!",
-        isUser: false,
-      };
-      setMessages((prev) => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 1500);
+    chatHistoryRef.current = [...chatHistoryRef.current, { role: "user", content }];
+    const assistantId = (Date.now() + 1).toString();
+    let assistantContent = "";
+
+    await streamChat({
+      messages: chatHistoryRef.current,
+      onDelta: (chunk) => {
+        assistantContent += chunk;
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && !last.isUser && last.id === assistantId) {
+            return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantContent } : m);
+          }
+          return [...prev, { id: assistantId, content: assistantContent, isUser: false }];
+        });
+        setIsTyping(false);
+      },
+      onDone: () => {
+        chatHistoryRef.current = [...chatHistoryRef.current, { role: "assistant", content: assistantContent }];
+        setIsTyping(false);
+      },
+      onError: (err) => {
+        toast.error(err);
+        setIsTyping(false);
+      },
+    });
   };
 
   return (

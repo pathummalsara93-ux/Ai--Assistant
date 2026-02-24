@@ -1,5 +1,6 @@
 import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface ChatMessageProps {
   content: string;
@@ -35,7 +36,9 @@ export const ChatMessage = ({ content, isUser, isError = false }: ChatMessagePro
             {isUser ? "You" : "T20-CLASSIC AI"}
           </span>
         </div>
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
+        <div className="text-sm leading-relaxed prose prose-sm prose-invert max-w-none">
+          <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
       </div>
     </div>
   );
