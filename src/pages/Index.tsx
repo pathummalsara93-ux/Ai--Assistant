@@ -182,23 +182,23 @@ const Index = () => {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="bg-card/60 backdrop-blur-md border-b border-border/30 flex items-center py-3 px-4 gap-3">
+        <div className="glass-effect border-b border-border/20 flex items-center py-3 px-4 gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground"
+            className="p-2 rounded-xl hover:bg-secondary/50 transition-all duration-200 text-muted-foreground hover:text-foreground"
             aria-label="Toggle sidebar"
           >
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1 text-center">
-            <h1 className="text-lg font-bold gradient-text">T20-CLASSIC AI</h1>
-            <p className="text-[10px] text-muted-foreground tracking-wide">
+            <h1 className="text-lg font-extrabold gradient-text">T20-CLASSIC AI</h1>
+            <p className="text-[9px] text-muted-foreground tracking-[0.2em] uppercase font-medium">
               Multilingual • Image Generation • Code
             </p>
           </div>
           <button
             onClick={handleNewChat}
-            className="p-2 rounded-lg hover:bg-secondary/60 transition-colors text-muted-foreground hover:text-foreground"
+            className="p-2 rounded-xl hover:bg-secondary/50 transition-all duration-200 text-muted-foreground hover:text-foreground"
             aria-label="New chat"
           >
             <Plus className="w-5 h-5" />
@@ -206,7 +206,7 @@ const Index = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto chat-scroll p-5 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto chat-scroll p-5 flex flex-col gap-5">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
@@ -222,12 +222,12 @@ const Index = () => {
         </div>
 
         {/* Status bar */}
-        <div className="border-t border-border/20 bg-card/40 px-4 py-2 flex justify-between text-[10px] text-muted-foreground">
+        <div className="border-t border-border/15 bg-card/20 backdrop-blur-sm px-4 py-1.5 flex justify-between text-[9px] text-muted-foreground/70">
           <span>
-            Model: <span className="text-primary font-semibold">{modelName}</span>
+            Model: <span className="text-primary font-medium">{modelName}</span>
           </span>
           <span>
-            Status: <span className={isTyping ? "text-accent font-semibold" : "text-primary font-semibold"}>{isTyping ? "Thinking..." : "Ready"}</span>
+            Status: <span className={isTyping ? "text-accent font-medium" : "text-primary/80 font-medium"}>{isTyping ? "Thinking..." : "Ready"}</span>
           </span>
         </div>
 
