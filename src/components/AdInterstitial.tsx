@@ -10,20 +10,21 @@ interface AdInterstitialProps {
 const AD_URL = "https://omg10.com/4/9599187";
 
 export const AdInterstitial = ({ open, onClose, message = "Loading..." }: AdInterstitialProps) => {
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(5);
   const [canClose, setCanClose] = useState(false);
+  const [redirected, setRedirected] = useState(false);
 
   useEffect(() => {
     if (!open) {
-      setCountdown(3);
+      setCountdown(5);
       setCanClose(false);
+      setRedirected(false);
       return;
     }
     const timer = setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {
           clearInterval(timer);
-          setCanClose(true);
           return 0;
         }
         return c - 1;
@@ -31,6 +32,15 @@ export const AdInterstitial = ({ open, onClose, message = "Loading..." }: AdInte
     }, 1000);
     return () => clearInterval(timer);
   }, [open]);
+
+  // Auto-redirect after countdown hits 0
+  useEffect(() => {
+    if (open && countdown === 0 && !redirected) {
+      setRedirected(true);
+      window.open(AD_URL, "_blank", "noopener,noreferrer");
+      setCanClose(true);
+    }
+  }, [open, countdown, redirected]);
 
   if (!open) return null;
 
@@ -51,15 +61,15 @@ export const AdInterstitial = ({ open, onClose, message = "Loading..." }: AdInte
         <div className="text-center space-y-4">
           <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">Sponsored</span>
           <p className="text-sm text-muted-foreground">{message}</p>
-          <a
-            href={AD_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block w-full py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow"
-          >
-            🔥 Check This Out
-          </a>
-          <p className="text-[10px] text-muted-foreground/50">Ad closes {canClose ? "now" : `in ${countdown}s`}</p>
+          {!canClose && (
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-12 h-12 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+              <p className="text-xs text-muted-foreground">Redirecting in {countdown}s...</p>
+            </div>
+          )}
+          {canClose && (
+            <p className="text-xs text-primary font-medium">✅ You can now close this</p>
+          )}
         </div>
       </div>
     </div>
