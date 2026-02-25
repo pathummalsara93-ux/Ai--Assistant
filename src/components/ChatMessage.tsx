@@ -7,6 +7,7 @@ interface ChatMessageProps {
   isUser: boolean;
   isError?: boolean;
   images?: string[];
+  onDownloadAd?: () => void;
 }
 
 const handleDownload = async (url: string, index: number) => {
@@ -26,7 +27,7 @@ const handleDownload = async (url: string, index: number) => {
   }
 };
 
-export const ChatMessage = ({ content, isUser, isError = false, images }: ChatMessageProps) => {
+export const ChatMessage = ({ content, isUser, isError = false, images, onDownloadAd }: ChatMessageProps) => {
   return (
     <div
       className={cn(
@@ -73,7 +74,10 @@ export const ChatMessage = ({ content, isUser, isError = false, images }: ChatMe
                     loading="lazy"
                   />
                   <button
-                    onClick={() => handleDownload(src, i)}
+                    onClick={() => {
+                      onDownloadAd?.();
+                      handleDownload(src, i);
+                    }}
                     className="absolute top-2 right-2 p-2 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-primary hover:text-primary-foreground"
                     aria-label="Download image"
                   >
