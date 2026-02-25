@@ -1,4 +1,4 @@
-import { Bot, User, ImageIcon } from "lucide-react";
+import { Bot, User, ImageIcon, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 
@@ -8,6 +8,23 @@ interface ChatMessageProps {
   isError?: boolean;
   images?: string[];
 }
+
+const handleDownload = async (url: string, index: number) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = `t20-classic-image-${Date.now()}-${index}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    window.open(url, "_blank");
+  }
+};
 
 export const ChatMessage = ({ content, isUser, isError = false, images }: ChatMessageProps) => {
   return (
@@ -48,13 +65,21 @@ export const ChatMessage = ({ content, isUser, isError = false, images }: ChatMe
           {images && images.length > 0 && (
             <div className="mb-3 space-y-2">
               {images.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt="AI generated image"
-                  className="rounded-xl max-w-full w-full shadow-lg border border-border/20"
-                  loading="lazy"
-                />
+                <div key={i} className="relative group/img">
+                  <img
+                    src={src}
+                    alt="AI generated image"
+                    className="rounded-xl max-w-full w-full shadow-lg border border-border/20"
+                    loading="lazy"
+                  />
+                  <button
+                    onClick={() => handleDownload(src, i)}
+                    className="absolute top-2 right-2 p-2 rounded-lg bg-background/80 backdrop-blur-sm border border-border/40 opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-primary hover:text-primary-foreground"
+                    aria-label="Download image"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
               ))}
             </div>
           )}
