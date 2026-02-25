@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Menu, Plus } from "lucide-react";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChatMessage } from "@/components/ChatMessage";
 import { TypingIndicator } from "@/components/TypingIndicator";
 import { ChatInput } from "@/components/ChatInput";
+import { AdInterstitial } from "@/components/AdInterstitial";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { streamChat, type ChatMsg } from "@/lib/streamChat";
 import { toast } from "sonner";
@@ -30,8 +31,23 @@ const Index = () => {
   const [selectedModel, setSelectedModel] = useState("t20-pro");
   const [modelName, setModelName] = useState("T20-CLASSIC Pro");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [adOpen, setAdOpen] = useState(false);
+  const [adMessage, setAdMessage] = useState("");
+  const adCallbackRef = useRef<(() => void) | null>(null);
   const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const showAd = useCallback((message: string, callback?: () => void) => {
+    setAdMessage(message);
+    adCallbackRef.current = callback || null;
+    setAdOpen(true);
+  }, []);
+
+  const handleAdClose = useCallback(() => {
+    setAdOpen(false);
+    adCallbackRef.current?.();
+    adCallbackRef.current = null;
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -46,10 +62,12 @@ const Index = () => {
     };
     const name = modelNames[model];
     setModelName(name);
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now().toString(), content: `Model switched to **${name}**`, isUser: false },
-    ]);
+    showAd(`Switching to ${name}...`, () => {
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now().toString(), content: `Model switched to **${name}**`, isUser: false },
+      ]);
+    });
     if (isMobile) setSidebarOpen(false);
   };
 
@@ -132,10 +150,12 @@ const Index = () => {
   };
 
   const handleNewChat = () => {
-    chatHistoryRef.current = [];
-    setMessages([
-      { id: Date.now().toString(), content: "New conversation started. How can I help you? 🚀", isUser: false },
-    ]);
+    showAd("Starting fresh conversation...", () => {
+      chatHistoryRef.current = [];
+      setMessages([
+        { id: Date.now().toString(), content: "New conversation started. How can I help you? 🚀", isUser: false },
+      ]);
+    });
   };
 
   return (
@@ -194,6 +214,7 @@ const Index = () => {
               isUser={message.isUser}
               isError={message.isError}
               images={message.images}
+              onDownloadAd={() => showAd("Downloading your image...")}
             />
           ))}
           {isTyping && <TypingIndicator />}
@@ -212,6 +233,7 @@ const Index = () => {
 
         <ChatInput onSend={handleSendMessage} disabled={isTyping} />
       </div>
+      <AdInterstitial open={adOpen} onClose={handleAdClose} message={adMessage} />
     </div>
   );
 };
