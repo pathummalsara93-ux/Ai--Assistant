@@ -87,6 +87,19 @@ export const ChatSidebar = ({ selectedModel, onModelSelect }: ChatSidebarProps) 
         </div>
       </div>
 
+      {/* Sponsored Ad */}
+      <div className="mt-4">
+        <a
+          href="https://omg10.com/4/9599187"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full rounded-xl bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 p-3 text-center hover:from-primary/30 hover:to-accent/30 transition-all"
+        >
+          <span className="text-[9px] text-muted-foreground uppercase tracking-widest block mb-1">Sponsored</span>
+          <span className="text-xs font-semibold text-foreground">🔥 Check This Out</span>
+        </a>
+      </div>
+
       {/* Footer */}
       <div className="mt-auto pt-4 text-center">
         <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest">by T20 STARBOY</p>
